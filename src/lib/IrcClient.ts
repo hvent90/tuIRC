@@ -15,7 +15,7 @@ export class IrcClient extends EventEmitter {
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectDelay = 5000
-  private pingInterval?: NodeJS.Timer
+  private pingInterval?: NodeJS.Timeout
   private lastPingTime = 0
 
   constructor() {

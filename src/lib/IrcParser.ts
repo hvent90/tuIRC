@@ -84,7 +84,7 @@ export class IrcParser {
     }
 
     const parts = trimmed.substring(1).split(" ")
-    const command = parts[0].toLowerCase()
+    const command = (parts[0] || "").toLowerCase()
     const args = parts.slice(1)
 
     return { command, args }

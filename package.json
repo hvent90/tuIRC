@@ -3,6 +3,11 @@
   "module": "src/index.tsx",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "bun build src/index.tsx --outdir dist --target bun",
+    "dev": "bun run src/index.tsx",
+    "typecheck": "tsc --noEmit"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

@@ -1,56 +1,35 @@
-import { BoxRenderable, OptimizedBuffer, RGBA, type BoxOptions, type RenderContext } from "@opentui/core"
-import { extend, render } from "@opentui/react"
+import { createCliRenderer, ConsolePosition } from "@opentui/core"
+import { render } from "@opentui/react"
+import { IRCApp } from "./components/IRCApp"
 
-// Create custom component class
-class ButtonRenderable extends BoxRenderable {
-    private _label: string = "Button"
+console.log("Starting IRC TUI application...")
 
-    constructor(ctx: RenderContext, options: BoxOptions & { label?: string }) {
-        super(ctx, {
-            border: true,
-            borderStyle: "single",
-            minHeight: 3,
-            ...options,
-        })
+async function main() {
+  try {
+    // Create renderer with console overlay support
+    const renderer = await createCliRenderer({
+      consoleOptions: {
+        position: ConsolePosition.BOTTOM,
+        sizePercent: 30,
+        colorInfo: "#00FFFF",
+        colorWarn: "#FFFF00",
+        colorError: "#FF0000",
+        startInDebugMode: false,
+      },
+    })
 
-        if (options.label) {
-            this._label = options.label
-        }
-    }
+    // Make renderer globally available for console toggle
+    global.renderer = renderer
 
-    protected renderSelf(buffer: OptimizedBuffer): void {
-        super.renderSelf(buffer)
+    console.log("Render starting...")
+    render(<IRCApp />)
+    console.log("Render completed successfully")
 
-        const centerX = this.x + Math.floor(this.width / 2 - this._label.length / 2)
-        const centerY = this.y + Math.floor(this.height / 2)
-
-        buffer.drawText(this._label, centerX, centerY, RGBA.fromInts(255, 255, 255, 255))
-    }
-
-    set label(value: string) {
-        this._label = value
-        this.requestRender()
-    }
+    console.info("Press Cmd + ` to toggle console overlay")
+  } catch (error) {
+    console.error("Failed to render application:", error)
+    process.exit(1)
+  }
 }
 
-// Add TypeScript support
-declare module "@opentui/react" {
-    interface OpenTUIComponents {
-        consoleButton: typeof ButtonRenderable
-    }
-}
-
-// Register the component
-extend({ consoleButton: ButtonRenderable })
-
-// Use in JSX
-function App() {
-    return (
-        <box>
-            <consoleButton label="Click me!" style={{ backgroundColor: "blue" }} />
-            <consoleButton label="Another button" style={{ backgroundColor: "green" }} />
-        </box>
-    )
-}
-
-render(<App />)
+main()
