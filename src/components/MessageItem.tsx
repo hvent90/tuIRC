@@ -8,7 +8,7 @@ interface MessageItemProps {
   key?: string
 }
 
-export function MessageItem({ message, isStreaming, streamContent }: MessageItemProps) {
+export const MessageItem = React.memo(({ message, isStreaming, streamContent }: MessageItemProps) => {
   const formatTimestamp = (timestamp: Date) => {
     return timestamp.toLocaleTimeString([], { hour12: false })
   }
@@ -46,4 +46,4 @@ export function MessageItem({ message, isStreaming, streamContent }: MessageItem
       </text>
     </box>
   )
-}
+})

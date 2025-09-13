@@ -1,16 +1,7 @@
 import React, { useState } from "react"
-import { useKeyboard } from "@opentui/react"
+import { useKeyboard, useRenderer } from "@opentui/react"
 
-// Declare global type for renderer
-declare global {
-  var renderer: {
-    console: {
-      toggle(): void
-      show(): void
-      hide(): void
-    }
-  }
-}
+
 
 interface MessageInputProps {
   onMessage: (message: string) => void
@@ -19,6 +10,7 @@ interface MessageInputProps {
 }
 
 export function MessageInput({ onMessage, onCommand, onChannelSwitch }: MessageInputProps) {
+  const renderer = useRenderer()
   const [inputValue, setInputValue] = useState("")
   const [messageHistory, setMessageHistory] = useState<string[]>([])
   const [historyIndex, setHistoryIndex] = useState(-1)
@@ -39,8 +31,8 @@ export function MessageInput({ onMessage, onCommand, onChannelSwitch }: MessageI
       // Handle built-in debug command
       if (command === 'debug') {
         console.log("Debug command detected!")
-        if (global.renderer && global.renderer.console) {
-          global.renderer.console.toggle()
+        if (renderer?.console) {
+          renderer.console.toggle()
           console.log("Console toggled with /debug command")
         } else {
           console.warn("Renderer not available for console toggle")
@@ -67,8 +59,8 @@ export function MessageInput({ onMessage, onCommand, onChannelSwitch }: MessageI
 
     if (isToggleConsole) {
       console.log("Console toggle detected in MessageInput!")
-      if (global.renderer && global.renderer.console) {
-        global.renderer.console.toggle()
+      if (renderer?.console) {
+        renderer.console.toggle()
         console.log("Console toggled from MessageInput")
       }
       return // Don't process other key handling

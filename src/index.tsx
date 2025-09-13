@@ -18,8 +18,7 @@ async function main() {
       },
     })
 
-    // Make renderer globally available for console toggle
-    global.renderer = renderer
+    // Renderer is now accessed via useRenderer hook
 
     console.log("Render starting...")
     render(<IRCApp />)

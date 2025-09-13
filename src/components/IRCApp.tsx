@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { useKeyboard } from "@opentui/react"
+import React, { useState, useCallback } from "react"
+import { useKeyboard, useRenderer } from "@opentui/react"
 import { useIrcClient } from "../hooks/useIrcClient"
 import { ConnectionDialog } from "./ConnectionDialog.tsx"
 import { MessageArea } from "./MessageArea.tsx"
@@ -8,19 +8,11 @@ import { MessageInput } from "./MessageInput.tsx"
 import { StatusBar } from "./StatusBar.tsx"
 import { HelpBar } from "./HelpBar.tsx"
 
-// Declare global type for renderer
-declare global {
-  var renderer: {
-    console: {
-      toggle(): void
-      show(): void
-      hide(): void
-    }
-  }
-}
+
 
 export function IRCApp() {
   console.log("IRCApp component rendering")
+  const renderer = useRenderer()
   const [showConnectionDialog, setShowConnectionDialog] = useState(true)
   const [activeChannelIndex, setActiveChannelIndex] = useState(0)
 
@@ -50,8 +42,8 @@ export function IRCApp() {
 
     if (isToggleConsole) {
       console.log("Console toggle detected!")
-      if (global.renderer && global.renderer.console) {
-        global.renderer.console.toggle()
+      if (renderer?.console) {
+        renderer.console.toggle()
         console.log("Console toggled with Cmd + `")
       } else {
         console.warn("Renderer not available for console toggle")
@@ -59,20 +51,21 @@ export function IRCApp() {
     }
   })
 
-  const handleConnect = async (server: string, port: number, nick: string) => {
+  const handleConnect = useCallback(async (server: string, port: number, nick: string) => {
     try {
       await connect(server, port, nick)
       setShowConnectionDialog(false)
     } catch (error) {
       console.error("Failed to connect:", error)
     }
-  }
+  }, [connect])
 
-  // Ensure activeChannelIndex is valid
-  const safeActiveChannelIndex = channels.length > 0 ? Math.min(activeChannelIndex, channels.length - 1) : 0
-  const activeChannel = channels.length > 0 ? channels[safeActiveChannelIndex] : undefined
+  // Ensure activeChannelIndex is valid with comprehensive bounds checking
+  const activeChannel = channels && channels.length > 0 && activeChannelIndex >= 0 && activeChannelIndex < channels.length
+    ? channels[activeChannelIndex]
+    : undefined
 
-  const handleMessage = (message: string) => {
+  const handleMessage = useCallback((message: string) => {
     if (activeChannel) {
       sendMessage(activeChannel.name, message)
     } else {
@@ -88,17 +81,17 @@ export function IRCApp() {
         sendCommand("system", ["No active channel selected"], channels[0]?.name)
       }
     }
-  }
+  }, [activeChannel, sendMessage, sendCommand, channels])
 
-  const handleCommand = (command: string, args: string[]) => {
+  const handleCommand = useCallback((command: string, args: string[]) => {
     sendCommand(command, args, activeChannel?.name)
-  }
+  }, [sendCommand, activeChannel?.name])
 
-  const handleChannelSwitch = () => {
+  const handleChannelSwitch = useCallback(() => {
     if (channels.length > 0) {
       setActiveChannelIndex((prev) => (prev + 1) % channels.length)
     }
-  }
+  }, [channels.length])
 
   if (showConnectionDialog) {
     return (
@@ -120,7 +113,7 @@ export function IRCApp() {
 
       <ChannelTabs
         channels={channels}
-        activeIndex={safeActiveChannelIndex}
+        activeIndex={activeChannelIndex}
         onChannelChange={setActiveChannelIndex}
       />
 

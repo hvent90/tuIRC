@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import type { Channel } from "../types"
+import type { Channel, Message } from "../types"
 import { MessageItem } from "./MessageItem"
 
 export interface MessageAreaProps {
@@ -16,11 +16,12 @@ export function MessageArea({ channel }: MessageAreaProps) {
 
   useEffect(() => {
     if (channel?.latestMessage && !channel.latestMessage.isComplete) {
-      startMessageStream(channel.latestMessage)
+      const interval = startMessageStream(channel.latestMessage)
+      return () => clearInterval(interval)
     }
   }, [channel?.latestMessage])
 
-  const startMessageStream = (message: any) => {
+  const startMessageStream = (message: Message) => {
     const chunkSize = Math.floor(Math.random() * 3) + 1
     let currentIndex = 0
 
@@ -40,6 +41,8 @@ export function MessageArea({ channel }: MessageAreaProps) {
         setStreamingMessage(null)
       }
     }, 32)
+
+    return interval
   }
 
   return (

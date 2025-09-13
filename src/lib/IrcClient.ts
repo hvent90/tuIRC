@@ -32,6 +32,17 @@ export class IrcClient extends EventEmitter {
       throw new Error("Already connected")
     }
 
+    // Input validation
+    if (!server || typeof server !== 'string') {
+      throw new Error('Invalid server address')
+    }
+    if (!port || port < 1 || port > 65535) {
+      throw new Error('Invalid port number')
+    }
+    if (!nick || nick.length === 0) {
+      throw new Error('Invalid nickname')
+    }
+
     this.server = server
     this.port = port
     this.currentNick = nick

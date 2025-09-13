@@ -26,10 +26,8 @@ export function ChannelTabs({ channels, activeIndex, onChannelChange }: ChannelT
           flexDirection="row"
           paddingLeft={1}
           paddingRight={1}
-          onClick={() => onChannelChange(index)}
           style={{
-            backgroundColor: index === activeIndex ? "#414868" : "transparent",
-            cursor: "pointer"
+            backgroundColor: index === activeIndex ? "#414868" : "transparent"
           }}
         >
           <text style={{

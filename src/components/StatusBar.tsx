@@ -8,12 +8,12 @@ interface StatusBarProps {
   userCount?: number
 }
 
-export function StatusBar({
+export const StatusBar = React.memo(({
   connectionState,
   currentChannel,
   currentNick,
   userCount
-}: StatusBarProps) {
+}: StatusBarProps) => {
   const getStatusColor = () => {
     switch (connectionState) {
       case 'connected': return "#9ece6a"
@@ -60,4 +60,4 @@ export function StatusBar({
       )}
     </box>
   )
-}
+})
