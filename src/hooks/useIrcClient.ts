@@ -74,23 +74,114 @@ export function useIrcClient() {
 
     const handleJoin = (nick: string, channelName: string) => {
       setChannels(prev => {
+        const joinMessage = {
+          id: Math.random().toString(36).substring(2, 9),
+          timestamp: new Date(),
+          nick,
+          content: `joined ${channelName}`,
+          type: "join" as const,
+          target: channelName,
+          isComplete: true,
+        }
+
         const existingChannel = prev.find(c => c.name === channelName)
         if (existingChannel) {
+          // Update user list AND add join message
           const newUsers = new Map(existingChannel.users)
           newUsers.set(nick, { nick, modes: [] })
           return prev.map(c =>
             c.name === channelName
-              ? { ...c, users: newUsers }
+              ? {
+                  ...c,
+                  users: newUsers,
+                  messages: [...c.messages, joinMessage],
+                  latestMessage: joinMessage
+                }
               : c
           )
         } else {
+          // Create new channel with join message
           const newChannel: Channel = {
             name: channelName,
             users: new Map([[nick, { nick, modes: [] }]]),
-            messages: []
+            messages: [joinMessage],
+            latestMessage: joinMessage
           }
           return [...prev, newChannel]
         }
+      })
+    }
+
+    const handlePart = (nick: string, channelName: string, reason?: string) => {
+      setChannels(prev => {
+        const partMessage = {
+          id: Math.random().toString(36).substring(2, 9),
+          timestamp: new Date(),
+          nick,
+          content: reason ? `left ${channelName} (${reason})` : `left ${channelName}`,
+          type: "part" as const,
+          target: channelName,
+          isComplete: true,
+        }
+
+        return prev.map(channel => {
+          if (channel.name === channelName) {
+            // Remove user and add part message
+            const newUsers = new Map(channel.users)
+            newUsers.delete(nick)
+            return {
+              ...channel,
+              users: newUsers,
+              messages: [...channel.messages, partMessage],
+              latestMessage: partMessage
+            }
+          }
+          return channel
+        })
+      })
+    }
+
+    const handleQuit = (nick: string, reason: string | undefined, affectedChannels: string[]) => {
+      setChannels(prev => {
+        const quitMessage = {
+          id: Math.random().toString(36).substring(2, 9),
+          timestamp: new Date(),
+          nick,
+          content: reason ? `quit (${reason})` : `quit`,
+          type: "quit" as const,
+          target: "Server", // Show quit messages in Server channel
+          isComplete: true,
+        }
+
+        // Add quit message to Server channel
+        const serverChannel = prev.find(c => c.name === "Server")
+        if (serverChannel) {
+          const updatedServerChannel = {
+            ...serverChannel,
+            messages: [...serverChannel.messages, quitMessage],
+            latestMessage: quitMessage
+          }
+
+          // Remove user from affected channels
+          const updatedChannels = prev.map(channel => {
+            if (affectedChannels.includes(channel.name)) {
+              const newUsers = new Map(channel.users)
+              newUsers.delete(nick)
+              return {
+                ...channel,
+                users: newUsers
+              }
+            }
+            return channel
+          })
+
+          // Replace Server channel with updated one
+          return updatedChannels.map(channel =>
+            channel.name === "Server" ? updatedServerChannel : channel
+          )
+        }
+
+        return prev
       })
     }
 
@@ -100,6 +191,8 @@ export function useIrcClient() {
     client.on("message", handleMessage)
     client.on("system", handleSystem)
     client.on("join", handleJoin)
+    client.on("part", handlePart)
+    client.on("quit", handleQuit)
 
     return () => {
       client.off("connected", handleConnected)
@@ -108,6 +201,8 @@ export function useIrcClient() {
       client.off("message", handleMessage)
       client.off("system", handleSystem)
       client.off("join", handleJoin)
+      client.off("part", handlePart)
+      client.off("quit", handleQuit)
     }
   }, [client])
 

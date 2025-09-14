@@ -236,21 +236,8 @@ export class IrcClient extends EventEmitter {
     const user: User = { nick, modes: [] }
     channelData.users.set(nick, user)
 
-    const message: Message = {
-      id: Math.random().toString(36).substring(2, 9),
-      timestamp: new Date(),
-      nick,
-      content: `joined ${channel}`,
-      type: "join",
-      target: channel,
-      isComplete: true,
-    }
-
-    channelData.messages.push(message)
-    channelData.latestMessage = message
-
+    // Only emit specific event - let React hook handle message creation
     this.emit("join", nick, channel)
-    this.emit("message", message)
   }
 
   private handlePart(nick: string, channel: string, reason?: string): void {
@@ -258,21 +245,8 @@ export class IrcClient extends EventEmitter {
     if (channelData) {
       channelData.users.delete(nick)
 
-      const message: Message = {
-        id: Math.random().toString(36).substring(2, 9),
-        timestamp: new Date(),
-        nick,
-        content: `left ${channel}${reason ? ` (${reason})` : ""}`,
-        type: "part",
-        target: channel,
-        isComplete: true,
-      }
-
-      channelData.messages.push(message)
-      channelData.latestMessage = message
-
+      // Only emit specific event
       this.emit("part", nick, channel, reason)
-      this.emit("message", message)
     }
   }
 
@@ -299,38 +273,22 @@ export class IrcClient extends EventEmitter {
       isComplete: false, // Will be streamed
     }
 
-    if (channelData) {
-      channelData.messages.push(message)
-      channelData.latestMessage = message
-    }
-
     this.emit("message", message)
   }
 
   private handleQuit(nick: string, reason?: string): void {
+    const affectedChannels: string[] = []
+
     // Remove user from all channels
     for (const channel of this.channels.values()) {
       if (channel.users.has(nick)) {
         channel.users.delete(nick)
-
-        const message: Message = {
-          id: Math.random().toString(36).substring(2, 9),
-          timestamp: new Date(),
-          nick,
-          content: `quit${reason ? ` (${reason})` : ""}`,
-          type: "quit",
-          target: channel.name,
-          isComplete: true,
-        }
-
-        channel.messages.push(message)
-        channel.latestMessage = message
-
-        this.emit("message", message)
+        affectedChannels.push(channel.name)
       }
     }
 
-    this.emit("quit", nick, reason)
+    // Single event with all affected channels
+    this.emit("quit", nick, reason, affectedChannels)
   }
 
   private handleNames(channel: string, namesList: string): void {
