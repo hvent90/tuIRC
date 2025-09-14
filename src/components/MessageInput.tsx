@@ -7,9 +7,10 @@ interface MessageInputProps {
   onMessage: (message: string) => void
   onCommand: (command: string, args: string[]) => void
   onChannelSwitch?: () => void
+  onChannelSwitchBackward?: () => void
 }
 
-export function MessageInput({ onMessage, onCommand, onChannelSwitch }: MessageInputProps) {
+export function MessageInput({ onMessage, onCommand, onChannelSwitch, onChannelSwitchBackward }: MessageInputProps) {
   const renderer = useRenderer()
   const [inputValue, setInputValue] = useState("")
   const [messageHistory, setMessageHistory] = useState<string[]>([])
@@ -68,8 +69,16 @@ export function MessageInput({ onMessage, onCommand, onChannelSwitch }: MessageI
 
     if (key.name === 'tab') {
       // Handle tab for channel switching
-      if (onChannelSwitch) {
-        onChannelSwitch()
+      if (key.shift) {
+        // Shift+Tab: cycle backward
+        if (onChannelSwitchBackward) {
+          onChannelSwitchBackward()
+        }
+      } else {
+        // Tab: cycle forward
+        if (onChannelSwitch) {
+          onChannelSwitch()
+        }
       }
     } else if (key.name === 'up') {
       if (historyIndex < messageHistory.length - 1) {

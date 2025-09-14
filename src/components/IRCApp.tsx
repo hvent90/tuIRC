@@ -93,6 +93,12 @@ export function IRCApp() {
     }
   }, [channels.length])
 
+  const handleChannelSwitchBackward = useCallback(() => {
+    if (channels.length > 0) {
+      setActiveChannelIndex((prev) => (prev - 1 + channels.length) % channels.length)
+    }
+  }, [channels.length])
+
   if (showConnectionDialog) {
     return (
       <ConnectionDialog
@@ -121,7 +127,7 @@ export function IRCApp() {
         <MessageArea channel={activeChannel} />
       </box>
 
-      <MessageInput onMessage={handleMessage} onCommand={handleCommand} onChannelSwitch={handleChannelSwitch} />
+      <MessageInput onMessage={handleMessage} onCommand={handleCommand} onChannelSwitch={handleChannelSwitch} onChannelSwitchBackward={handleChannelSwitchBackward} />
 
       <HelpBar />
     </box>

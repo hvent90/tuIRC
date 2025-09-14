@@ -17,7 +17,7 @@ export function HelpBar() {
       <box flexGrow={1} />
 
       <text style={{ fg: "#565f89" }}>
-        ↑/↓ History | Tab: Switch channels
+        ↑/↓ History | Tab: Next channel | Shift+Tab: Previous channel
       </text>
     </box>
   )
