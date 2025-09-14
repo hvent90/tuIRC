@@ -47,7 +47,6 @@ export function ConnectionDialog({ onConnect, isConnecting }: ConnectionDialogPr
       <box
         flexDirection="column"
         width={60}
-        height={18}
         border={true}
         borderStyle="single"
         padding={2}
