@@ -54,8 +54,8 @@ export const StatusBar = React.memo(({
       <box flexGrow={1} />
 
       {currentChannel && (
-        <text style={{ fg: "#bb9af7" }}>
-          {currentChannel} {userCount ? `(${userCount})` : ''}
+        <text style={{ fg: currentChannel === "Server" ? "#e0af68" : "#bb9af7" }}>
+          {currentChannel} {currentChannel !== "Server" && userCount ? `(${userCount})` : ''}
         </text>
       )}
     </box>

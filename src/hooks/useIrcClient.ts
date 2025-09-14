@@ -33,26 +33,41 @@ export function useIrcClient() {
 
     const handleSystem = (content: string, target?: string) => {
       setChannels(prev => {
-        return prev.map(channel => {
-          // If target is specified, only add to that channel
-          // Otherwise, add to all channels (for general system messages)
-          if (target && channel.name !== target) return channel
+        let channels = [...prev]
 
-          const systemMessage = {
-            id: Math.random().toString(36).substring(2, 9),
-            timestamp: new Date(),
-            nick: "System",
-            content,
-            type: "system" as const,
-            target: target || channel.name,
-            isComplete: true,
-          }
+        // Ensure Server channel exists for system messages
+        const serverChannelExists = channels.some(c => c.name === "Server")
+        if (!serverChannelExists) {
+          channels.push({
+            name: "Server",
+            users: new Map(),
+            messages: []
+          })
+        }
 
-          return {
-            ...channel,
-            messages: [...channel.messages, systemMessage],
-            latestMessage: systemMessage
+        // Use Server as default target for system messages
+        const actualTarget = target || "Server"
+
+        return channels.map(channel => {
+          // Add to target channel (Server for system messages)
+          if (channel.name === actualTarget) {
+            const systemMessage = {
+              id: Math.random().toString(36).substring(2, 9),
+              timestamp: new Date(),
+              nick: "System",
+              content,
+              type: "system" as const,
+              target: actualTarget,
+              isComplete: true,
+            }
+
+            return {
+              ...channel,
+              messages: [...channel.messages, systemMessage],
+              latestMessage: systemMessage
+            }
           }
+          return channel
         })
       })
     }
@@ -101,6 +116,19 @@ export function useIrcClient() {
     try {
       await client.connect(server, port, nick)
       setCurrentNick(nick)
+
+      // Initialize Server channel for system messages
+      setChannels(prev => {
+        const serverChannelExists = prev.some(c => c.name === "Server")
+        if (!serverChannelExists) {
+          return [...prev, {
+            name: "Server",
+            users: new Map(),
+            messages: []
+          }]
+        }
+        return prev
+      })
     } catch (error) {
       setConnectionState("error")
       throw error
@@ -142,7 +170,14 @@ export function useIrcClient() {
         if (args[0]) client.join(args[0])
         break
       case "part":
-        if (args[0]) client.part(args[0])
+        if (args[0]) {
+          // Prevent parting from Server channel
+          if (args[0].toLowerCase() === "server") {
+            client.emit("system", "Cannot part from Server channel", targetChannel)
+            return
+          }
+          client.part(args[0])
+        }
         break
       case "nick":
         if (args[0]) client.nick(args[0])
