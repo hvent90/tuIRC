@@ -28,6 +28,11 @@ export class IrcClient extends EventEmitter {
   }
 
   async connect(server: string, port: number, nick: string): Promise<void> {
+    console.log('IrcClient::connect');
+    if (this.connectionState === "connecting") {
+      throw new Error("Already connecting")
+    }
+
     if (this.connectionState === "connected") {
       throw new Error("Already connected")
     }
@@ -192,6 +197,7 @@ export class IrcClient extends EventEmitter {
         break
 
       case "PRIVMSG":
+        console.log("IrcClient::processMessage::PRIVMSG");
         if (params[0] && params[1]) this.handlePrivmsg(nick, params[0], params[1])
         break
 
@@ -251,6 +257,7 @@ export class IrcClient extends EventEmitter {
   }
 
   private handlePrivmsg(nick: string, target: string, content: string): void {
+    console.log('IrcClient::handlePrivmsg', nick, target, content);
     const isChannel = IrcParser.isChannelName(target)
     const channelData = isChannel ? this.channels.get(target) : this.channels.get(nick)
 

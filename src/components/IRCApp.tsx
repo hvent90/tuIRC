@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react"
 import { useKeyboard, useRenderer } from "@opentui/react"
-import { useIrcClient } from "../hooks/useIrcClient"
+import { useIrc } from "../contexts/IrcContext"
 import { ConnectionDialog } from "./ConnectionDialog.tsx"
 import { MessageArea } from "./MessageArea.tsx"
 import { ChannelTabs } from "./ChannelTabs.tsx"
@@ -11,7 +11,6 @@ import { HelpBar } from "./HelpBar.tsx"
 
 
 export function IRCApp() {
-  console.log("IRCApp component rendering")
   const renderer = useRenderer()
   const [showConnectionDialog, setShowConnectionDialog] = useState(true)
   const [activeChannelIndex, setActiveChannelIndex] = useState(0)
@@ -24,11 +23,7 @@ export function IRCApp() {
     disconnect,
     sendMessage,
     sendCommand
-  } = useIrcClient()
-
-  console.log("Connection state:", connectionState)
-  console.log("Channels:", channels.length)
-  console.log("Show connection dialog:", showConnectionDialog)
+  } = useIrc()
 
   // Global keyboard shortcuts
   useKeyboard((key) => {
@@ -52,13 +47,21 @@ export function IRCApp() {
   })
 
   const handleConnect = useCallback(async (server: string, port: number, nick: string) => {
+    console.log("handleConnect called with:", server, port, nick)
+
+    // Prevent double connection attempts
+    if (connectionState === "connecting" || connectionState === "connected") {
+      console.log("Already connecting or connected, ignoring duplicate call")
+      return
+    }
+
     try {
       await connect(server, port, nick)
       setShowConnectionDialog(false)
     } catch (error) {
       console.error("Failed to connect:", error)
     }
-  }, [connect])
+  }, [connect, connectionState])
 
   // Ensure activeChannelIndex is valid with comprehensive bounds checking
   const activeChannel = channels && channels.length > 0 && activeChannelIndex >= 0 && activeChannelIndex < channels.length

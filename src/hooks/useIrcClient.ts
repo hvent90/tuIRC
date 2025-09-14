@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react"
+import {useState, useEffect, useCallback, useRef} from "react"
 import { IrcClient } from "../lib/IrcClient"
 import type { Channel, ConnectionState } from "../types"
 
 export function useIrcClient() {
-  const [client] = useState(() => new IrcClient())
+  console.log("useIrcClient called")
+  const client = useRef(new IrcClient()).current
   const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected")
   const [channels, setChannels] = useState<Channel[]>([])
   const [currentNick, setCurrentNick] = useState("")
@@ -17,6 +18,7 @@ export function useIrcClient() {
     }
 
     const handleMessage = (message: any) => {
+      console.log('handleMessage', message);
       setChannels(prev => {
         return prev.map(channel => {
           if (channel.name === message.target) {
@@ -185,6 +187,7 @@ export function useIrcClient() {
       })
     }
 
+    console.log('subscribing to events');
     client.on("connected", handleConnected)
     client.on("disconnected", handleDisconnected)
     client.on("error", handleError)
@@ -204,7 +207,7 @@ export function useIrcClient() {
       client.off("part", handlePart)
       client.off("quit", handleQuit)
     }
-  }, [client])
+  }, [])
 
   const connect = useCallback(async (server: string, port: number, nick: string) => {
     setConnectionState("connecting")

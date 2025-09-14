@@ -13,8 +13,12 @@ export function ConnectionDialog({ onConnect, isConnecting }: ConnectionDialogPr
   const [focusedField, setFocusedField] = useState<"server" | "port" | "nick" | "submit">("server")
 
   const handleSubmit = () => {
-    if (server && port && nick) {
+    console.log("ConnectionDialog handleSubmit called, isConnecting:", isConnecting)
+    if (server && port && nick && !isConnecting) {
+      console.log("Calling onConnect from ConnectionDialog")
       onConnect(server, port, nick)
+    } else {
+      console.log("Submit blocked - missing fields or already connecting")
     }
   }
 
