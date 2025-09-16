@@ -2,17 +2,21 @@
 
 IRC + [OpenTUI](https://github.com/sst/opentui)
 
-about to slam some wine in sonoma, enjoy the comprehensive readme.md
+Enjoy the comprehensive readme.md.
 
-To install dependencies:
+Most of the spec is not implemented. Feel free to submit a PR.
+
+To use:
 
 ```bash
+npm install -g tuirc
+tuirc
+```
+
+dev:
+
+```bash
+git clone git@github.com:hvent90/tuIRC.git
 bun install
+npm run dev
 ```
-
-To run:
-
-```bash
-bun run src/index.tsx
-```
-
