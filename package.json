@@ -1,12 +1,19 @@
 {
-  "name": "irc-tui",
+  "name": "tuirc",
   "module": "src/index.tsx",
   "type": "module",
-  "private": true,
+  "private": false,
+  "bin": {
+    "tuirc": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "bun build src/index.tsx --outdir dist --target bun",
     "dev": "bun run src/index.tsx",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@types/bun": "latest"

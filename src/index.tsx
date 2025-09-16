@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { createCliRenderer, ConsolePosition } from "@opentui/core"
 import { render } from "@opentui/react"
 import { IRCApp } from "./components/IRCApp"
