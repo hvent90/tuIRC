@@ -144,6 +144,10 @@ export class IrcClient extends EventEmitter {
     this.send("NICK", [newNick])
   }
 
+  list(): void {
+    this.send("LIST", []);
+  }
+
   quit(reason?: string): void {
     const params = reason ? [`:${reason}`] : []
     this.send("QUIT", params)

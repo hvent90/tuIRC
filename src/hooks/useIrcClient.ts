@@ -291,6 +291,9 @@ export function useIrcClient() {
         const helpText = "Available commands: /join #channel, /part #channel, /nick newname, /quit [reason], /help"
         client.emit("system", helpText, targetChannel)
         break
+      case "list":
+        client.list();
+        break;
       default:
         const unknownText = `Unknown command: /${command}. Type /help for available commands.`
         client.emit("system", unknownText, targetChannel)

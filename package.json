@@ -2,6 +2,7 @@
   "name": "tuirc",
   "module": "src/index.tsx",
   "type": "module",
+  "author": "hvent90",
   "private": false,
   "bin": {
     "tuirc": "./dist/index.js"
